@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 if ( ! class_exists( 'Boo_Widget_Helper' ) ) :
 	/**
-	 * Class Boorecipe_Widget_Master
+	 * Class Boo_Widget_Helper
 	 */
 	abstract class Boo_Widget_Helper extends WP_Widget {
 
