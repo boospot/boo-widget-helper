@@ -350,6 +350,63 @@ if ( ! class_exists( 'Boo_Widget_Helper' ) ) :
 			}
 		}
 
+		protected function widget_instance_fields() {
+			?>
+            <input type="hidden" name="widget_id" value="<?php echo sanitize_key( $this->widget_id ); ?>">
+            <input type="hidden" name="widget_number" value="<?php echo absint( $this->number ); ?>">
+			<?php
+		}
+
+
+		/**
+		 * @param array $args
+		 * @param array $instance
+		 */
+		function widget( $args, $instance ) {
+
+			if ( $this->get_cached_widget( $args ) ) {
+				return;
+			}
+			ob_start();
+			$this->widget_start( $args, $instance );
+
+			// Your Magic happens here.
+
+
+			echo $this->widget_display( $args, $instance );
+
+
+			// Your magic ends here
+			$this->widget_end( $args );
+			echo $this->cache_widget( $args, ob_get_clean() ); // WPCS: XSS ok.
+
+		}
+
+
+		/*
+		 * This Method is meant to be overridden by the class extending this class
+		 */
+		function widget_display( $args, $instance ) {
+			return '';
+		}
+
+
+		function get_default_instance() {
+
+			$default_instance = array();
+
+			foreach ( $this->settings as $key => $setting ) {
+				$default_instance[ $key ] = isset( $setting['std'] ) ? $setting['std'] : '';
+			}
+
+			return $default_instance;
+		}
+
+
+		function normalize_instance( $instance ) {
+			return wp_parse_args( $instance, $this->get_default_instance() );
+		}
+
 		/**
 		 * Get widget id plus scheme/protocol to prevent serving mixed content from (persistently) cached widgets.
 		 *
