@@ -22,11 +22,22 @@ if ( ! class_exists( 'Plugin_Name_My_Widget' ) ) {
 		public function __construct() {
 
 			$configuration = array(
-				'id'     => 'my_awesome_widget',								// widget id
-				'name'   => __( 'Awesome Widget', 'plugin-name' ), 				// widget-name
-				'desc'   => __( 'Widget Using Helper Class', 'plugin-name' ), 	// widget description
-				'class'  => 'my_awesome_css_class_for_widget', 					// widget css class
-				'fields' => $this->get_fields_array() 							// widget fields array
+			
+				// widget id
+				'id'     => 'my_awesome_widget',
+				
+				// widget-name				
+				'name'   => __( 'Awesome Widget', 'plugin-name' ), 				
+				
+				// widget description
+				'desc'   => __( 'Widget Using Helper Class', 'plugin-name' ), 	
+				
+				// widget css class
+				'class'  => 'my_awesome_css_class_for_widget', 		
+
+				// widget fields array
+				'fields' => $this->get_fields_array() 	
+				
 			);
 
 			parent::__construct( $configuration );
