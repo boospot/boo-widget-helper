@@ -26,16 +26,16 @@ if ( ! class_exists( 'Plugin_Name_My_Widget' ) ) {
 				'name'   => __( 'Awesome Widget', 'plugin-name' ),
 				'desc'   => __( 'Widget Using Helper Class', 'plugin-name' ),
 				'class'  => 'my_awesome_css_class_for_widget',
-				'fields' => $this->get_fields_array();
+				'fields' => $this->get_fields_array()
 			);
 
 			parent::__construct( $configuration );
 
 		}
-		
-		
-		public function get_fields_array(){
-			
+
+
+		public function get_fields_array() {
+
 			$fields_array = array(
 				'title'       => array(
 					'label' => __( 'Title:', 'plugin-name' ),
@@ -169,9 +169,9 @@ if ( ! class_exists( 'Plugin_Name_My_Widget' ) ) {
 					'sanitize_callback' => 'sanitize_url'
 				),
 			);
-			
+
 			return $fields_array;
-			
+
 		}
 
 		/**
@@ -183,7 +183,9 @@ if ( ! class_exists( 'Plugin_Name_My_Widget' ) ) {
 		public function widget_display( $args, $instance ) {
 
 			// Display our widget output
+			echo "<pre>";
 			var_export( $instance );
+			echo "</pre>";
 
 		}
 
