@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * idea is taken from Woocommerce plugin.
  *
- * @version 1.0
+ * @version 2.0
  *
  * @author RaoAbid | BooSpot
  * @link https://github.com/boospot/boo-widget-helper
@@ -97,8 +97,8 @@ if ( ! class_exists( 'Boo_Widget_Helper' ) ) :
 			add_action( 'switch_theme', array( $this, 'flush_widget_cache' ) );
 
 			// For fields like color, file, media
-			add_action( 'admin_enqueue_scripts', array( $this, 'register_scripts' ) );
-			add_action( 'admin_footer', array( $this, 'maybe_enqueue_scripts' ) );
+			add_action( 'load-widgets.php', array( $this, 'register_scripts' ) );
+			add_action( 'load-widgets.php', array( $this, 'maybe_enqueue_scripts' ) );
 
 		}
 
@@ -205,7 +205,10 @@ if ( ! class_exists( 'Boo_Widget_Helper' ) ) :
 
 			wp_register_script(
 				$this->prefix . 'admin_scripts',
-				null
+				null,
+				array(),
+				false,
+				true
 			);
 		}
 
@@ -640,6 +643,20 @@ if ( ! class_exists( 'Boo_Widget_Helper' ) ) :
 				( is_array( $value ) )
 					? array_map( 'sanitize_text_field', $value )
 					: array();
+		}
+
+		/**
+		 * @param $value
+		 *
+		 * @return array|int
+		 */
+		function sanitize_taxonomy( $value ) {
+
+			return
+				( is_array( $value ) )
+					? array_map( 'sanitize_text_field', $value ) // taxonomy terms object property
+					: sanitize_text_field( $value ); //if select field is used
+
 		}
 
 		/**
@@ -1086,21 +1103,38 @@ if ( ! class_exists( 'Boo_Widget_Helper' ) ) :
 		 */
 		public function maybe_enqueue_scripts() {
 
-			$scripts_required = true;
+			$scripts_required = false;
 			$field_types      = $this->get_field_types();
 
 			if ( in_array( 'color', $field_types ) ) {
 
-				wp_enqueue_style( 'wp-color-picker' );
-				wp_enqueue_script( 'wp-color-picker' );
-
 				$script =
-					"jQuery(document).ready(function ($) {
-                    //Initiate Color Picker
-                    if ($('.wp-color-picker-field').length > 0) {
-                        $('.wp-color-picker-field').wpColorPicker();
+					"(function($){
+	
+                    var booColorPickerParams = { 
+                        change: function(e, ui) {
+                          $( e.target ).val( ui.color.toString() );
+                          $( e.target ).trigger('change'); // enable widget 'Save' button
+                        },
+                      }
+                     
+                    var parent = $('body');
+                    if ($('body').hasClass('widgets-php')){
+                        parent = $('.widget-liquid-right');
                     }
-                    });";
+                    jQuery(document).ready(function($) {
+                        parent.find('.wp-color-picker').wpColorPicker(booColorPickerParams);
+                    });
+                    
+                    jQuery(document).on('widget-added', function(e, widget){
+                        widget.find('.wp-color-picker').wpColorPicker(booColorPickerParams);
+                    });
+                    
+                    jQuery(document).on('widget-updated', function(e, widget){
+                        widget.find('.wp-color-picker').wpColorPicker(booColorPickerParams);
+                    });
+                    
+                })(jQuery);";
 
 				wp_add_inline_script( $this->prefix . 'admin_scripts', $script );
 				$scripts_required = true;
@@ -1111,7 +1145,7 @@ if ( ! class_exists( 'Boo_Widget_Helper' ) ) :
 
 				$script =
 					"jQuery(document).ready(function ($) {
-                                        // For Files Upload
+                    // For Files Upload
                     if ($('.boospot-file-browse-button').length > 0) {
                         $('.boospot-file-browse-button').off('click');
                         $('.boospot-file-browse-button').on('click', function (event) {
@@ -1193,7 +1227,7 @@ if ( ! class_exists( 'Boo_Widget_Helper' ) ) :
 				$scripts_required = true;
 			}
 
-			// if flag is set, then enqueue the script
+			//if flag is set, then enqueue the script
 			if ( $scripts_required ) {
 				wp_enqueue_script( $this->prefix . 'admin_scripts' );
 			}
@@ -1276,7 +1310,7 @@ if ( ! class_exists( 'Boo_Widget_Helper' ) ) :
 				'<input 
                             id="%1$s" 
                             name="%2$s" 
-                            class="%3$s wp-color-picker-field" 
+                            class="%3$s wp-color-picker" 
                             value="%4$s" 
                             data-alpha="true" 
                             data-default-color="%5$s" 
@@ -1290,6 +1324,8 @@ if ( ! class_exists( 'Boo_Widget_Helper' ) ) :
 
 
 		}
+
+
 
 
 		/**
@@ -1342,9 +1378,12 @@ if ( ! class_exists( 'Boo_Widget_Helper' ) ) :
 			//$args['options'] is required by callback_select()
 			$args['options'] = $options;
 
-			$display_as = in_array( $args['display'], array( 'select', 'multicheck' ) )
-				? $args['display']
-				: 'select';
+			$display_as =
+				isset( $args['display'] )
+				&&
+				in_array( $args['display'], array( 'select', 'multicheck' ) )
+					? $args['display']
+					: 'select';
 
 			if ( is_callable( array( $this, 'callback_' . $display_as ) ) ) {
 				call_user_func_array(
@@ -1353,6 +1392,68 @@ if ( ! class_exists( 'Boo_Widget_Helper' ) ) :
 				);
 
 //			        $this->callback_select( $args );
+			};
+
+
+		}
+
+
+		/**
+		 * @param $args
+		 */
+		function callback_taxonomy( $args ) {
+
+			$taxonomy_args = array(
+				'taxonomy'   => 'category',
+				'hide_empty' => true,
+				'save'       => 'slug',
+			);
+
+			$taxonomy_args = wp_parse_args( $args['options'], $taxonomy_args );
+
+			$term_property_to_save = sanitize_key( $taxonomy_args['save'] );
+			unset( $taxonomy_args['save'] );
+
+			/**
+			 * Check:
+			 * https://developer.wordpress.org/reference/functions/get_terms/
+			 * https://developer.wordpress.org/reference/classes/wp_term_query/__construct/
+			 */
+			$taxonomy_terms = get_terms( $taxonomy_args );
+
+			$options = array();
+			if ( ! empty( $taxonomy_terms ) ) :
+				foreach ( $taxonomy_terms as $term ) :
+					$properties = get_object_vars( $term );
+
+					$option_key =
+						( isset( $properties[ $term_property_to_save ] ) )
+							? $properties[ $term_property_to_save ]
+							: $properties['term_id'];
+
+					$options[ $option_key ] = esc_html( $term->name );
+				endforeach;
+
+			endif;
+
+
+			//$args['options'] is required by callback_select()
+			$args['options'] = $options;
+
+			$display_as =
+				isset( $args['display'] )
+				&&
+				in_array( $args['display'], array( 'select', 'multicheck' ) )
+					? $args['display']
+					: 'select';
+
+			if ( is_callable( array( $this, 'callback_' . $display_as ) ) ) {
+				call_user_func_array(
+					array( $this, 'callback_' . $display_as ),
+					array( $args )
+				);
+				// free memory
+				unset( $taxonomy_args, $taxonomy_terms, $options, $display_as );
 			};
 
 

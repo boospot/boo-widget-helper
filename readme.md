@@ -145,6 +145,28 @@ if ( ! class_exists( 'Plugin_Name_My_Widget' ) ) {
 						'post_type' => 'book'
 					)
 				),
+				
+				'taxonomy_field1' => array(
+					'type'    => 'taxonomy',
+					'label'   => __( 'Taxonomy (select)', 'plugin-name' ),
+					'desc'    => __( 'description for Taxonomy Select', 'plugin-name' ),
+					'display' => 'select',
+					'options' => array(
+						'taxonomy' => 'genre',
+						'save'     => 'slug', // or term_id or any term object property
+					)
+				),
+				
+				'taxonomy_field2' => array(
+					'type'    => 'taxonomy',
+					'label'   => __( 'Taxonomy (multicheck)', 'plugin-name' ),
+					'desc'    => __( 'description for Taxonomy', 'plugin-name' ),
+					'display' => 'multicheck',
+					'options' => array(
+						'taxonomy' => 'genre',
+						'save'     => 'slug', // or term_id or any term object property
+					)
+				),
 
 				'file_field_id' => array(
 					'type'    => 'file',
