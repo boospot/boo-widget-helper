@@ -358,11 +358,11 @@ if ( ! class_exists( 'Boo_Widget_Helper' ) ) :
 						: $this->get_sanitize_callback_method( $field['type'] );
 
 				$dirty_value =
-					isset( $new_instance[ $field_id ] )
-						? $new_instance[ $field_id ]
+					isset( $new_instance[ $field['id'] ] )
+						? $new_instance[ $field['id'] ]
 						: '';
 
-				$instance[ $field_id ] = call_user_func_array(
+				$instance[ $field['id'] ] = call_user_func_array(
 					$field['sanitize_callback'],
 					array( $dirty_value )
 				);
@@ -426,18 +426,49 @@ if ( ! class_exists( 'Boo_Widget_Helper' ) ) :
 		 * Normalize Fields / settings for widget
 		 */
 		public function normalize_fields() {
-			if ( is_array( $this->fields ) && ! empty( $this->fields ) ):
-				foreach ( $this->fields as $field_id => $field_args ) {
 
-					$this->fields[ $field_id ] =
+			$normalized_fields = array();
+
+			if ( is_array( $this->fields ) && ! empty( $this->fields ) ):
+
+				$need_field_id = ( $this->isAssoc( $this->fields ) ) ? false : true;
+
+				foreach ( $this->fields as $key => $field ) {
+
+					if ( $need_field_id ) {
+						$field_id =
+							( isset( $field['id'] ) && ! empty( $field['id'] ) )
+								? $field['id']
+								: 'field_' . $key;
+					} else {
+						$field_id = $key;
+					}
+
+
+					$normalized_fields[ $field_id ] =
 						wp_parse_args(
-							$this->fields[ $field_id ],
-							$this->get_default_field_args( $field_id, $field_args )
+							$this->fields[ $key ],
+							$this->get_default_field_args( $field_id, $field )
 						);
 
-					wp_parse_args( '', '' );
 				}
+
+
 			endif;
+
+			$this->fields = $normalized_fields;
+		}
+
+		/**
+		 * check if a an array is associative or sequential
+		 */
+		public function isAssoc( array $arr ) {
+
+			if ( array() === $arr ) {
+				return false;
+			}
+
+			return array_keys( $arr ) !== range( 0, count( $arr ) - 1 );
 		}
 
 		/**
@@ -455,6 +486,7 @@ if ( ! class_exists( 'Boo_Widget_Helper' ) ) :
 
 			// Loop through the fields to display form
 			foreach ( $this->fields as $field_id => $args ) :
+
 				$args['value'] =
 					isset( $instance[ $field_id ] )
 						? $instance[ $field_id ]
@@ -1324,8 +1356,6 @@ if ( ! class_exists( 'Boo_Widget_Helper' ) ) :
 
 
 		}
-
-
 
 
 		/**
