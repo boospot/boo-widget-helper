@@ -215,7 +215,7 @@ if ( ! class_exists( 'Boo_Widget_Helper' ) ) :
 		/**
 		 * Get cached widget.
 		 *
-		 * @param  array $args Arguments.
+		 * @param array $args Arguments.
 		 *
 		 * @return bool true if the widget is cached otherwise false
 		 */
@@ -238,8 +238,8 @@ if ( ! class_exists( 'Boo_Widget_Helper' ) ) :
 		/**
 		 * Cache the widget.
 		 *
-		 * @param  array $args Arguments.
-		 * @param  string $content Content.
+		 * @param array $args Arguments.
+		 * @param string $content Content.
 		 *
 		 * @return string the content that was cached
 		 */
@@ -283,7 +283,7 @@ if ( ! class_exists( 'Boo_Widget_Helper' ) ) :
 		/**
 		 * Output the html at the end of a widget.
 		 *
-		 * @param  array $args Arguments.
+		 * @param array $args Arguments.
 		 */
 		public function widget_end( $args ) {
 			echo $args['after_widget']; // phpcs:ignore WordPress.XSS.EscapeOutput.OutputNotEscaped
@@ -319,12 +319,12 @@ if ( ! class_exists( 'Boo_Widget_Helper' ) ) :
 		/**
 		 * Updates a particular instance of a widget.
 		 *
-		 * @see    WP_Widget->update
-		 *
-		 * @param  array $new_instance New instance.
-		 * @param  array $old_instance Old instance.
+		 * @param array $new_instance New instance.
+		 * @param array $old_instance Old instance.
 		 *
 		 * @return array
+		 * @see    WP_Widget->update
+		 *
 		 */
 		public function update( $new_instance, $old_instance ) {
 
@@ -474,9 +474,10 @@ if ( ! class_exists( 'Boo_Widget_Helper' ) ) :
 		/**
 		 * Outputs the settings update form.
 		 *
+		 * @param array $instance Instance.
+		 *
 		 * @see   WP_Widget->form
 		 *
-		 * @param array $instance Instance.
 		 */
 		public function form( $instance ) {
 
@@ -593,12 +594,12 @@ if ( ! class_exists( 'Boo_Widget_Helper' ) ) :
 		/**
 		 * Get widget id plus scheme/protocol to prevent serving mixed content from (persistently) cached widgets.
 		 *
-		 * @since  3.4.0
-		 *
-		 * @param  string $widget_id Id of the cached widget.
-		 * @param  string $scheme Scheme for the widget id.
+		 * @param string $widget_id Id of the cached widget.
+		 * @param string $scheme Scheme for the widget id.
 		 *
 		 * @return string            Widget id including scheme/protocol.
+		 * @since  3.4.0
+		 *
 		 */
 		protected function get_widget_id_for_cache( $widget_id, $scheme = '' ) {
 			if ( $scheme ) {
@@ -1140,7 +1141,7 @@ if ( ! class_exists( 'Boo_Widget_Helper' ) ) :
 
 			if ( in_array( 'color', $field_types ) ) {
 
-				wp_enqueue_style( 'wp-color-picker' ); 
+				wp_enqueue_style( 'wp-color-picker' );
 				wp_enqueue_script( 'wp-color-picker' );
 
 				$script =
@@ -1492,6 +1493,43 @@ if ( ! class_exists( 'Boo_Widget_Helper' ) ) :
 
 		}
 
+
+		/**
+		 * @param $args
+		 */
+		function callback_taxonomy_list( $args ) {
+
+			$options = get_taxonomies(
+				array(
+					'public' => true,
+				),
+				'names',
+				'and'
+			);
+
+			$options = array( '' => __( 'Please Select', '' )) + $options;
+
+			//$args['options'] is required by callback_select()
+			$args['options'] = $options;
+
+			$display_as =
+				isset( $args['display'] )
+				&&
+				in_array( $args['display'], array( 'select', 'multicheck' ) )
+					? $args['display']
+					: 'select';
+
+			if ( is_callable( array( $this, 'callback_' . $display_as ) ) ) {
+				call_user_func_array(
+					array( $this, 'callback_' . $display_as ),
+					array( $args )
+				);
+				// free memory
+				unset( $taxonomy_args, $taxonomy_terms, $options, $display_as );
+			};
+
+
+		}
 
 		/**
 		 * @param $placeholder
