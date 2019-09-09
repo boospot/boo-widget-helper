@@ -5,6 +5,19 @@ This is a helper class to create widgets easily and effectively using WordPress 
 - Ability to override callback 
 - Ability to override sanitize_callback for fields
 
+## Hook the class in `widgets_init`
+
+`require` the class file (sample code below) and then hook into `widgets_init`
+
+```
+add_action( 'widgets_init', function(){
+
+	register_widget( 'Plugin_Name_My_Widget' );
+
+} );
+
+```
+
 ## Sample Widget Class using Helper Class
 
 ```
@@ -152,7 +165,7 @@ if ( ! class_exists( 'Plugin_Name_My_Widget' ) ) {
 					'desc'    => __( 'description for Taxonomy Select', 'plugin-name' ),
 					'display' => 'select',
 					'options' => array(
-						'taxonomy' => 'genre',
+						'taxonomy' => 'category',
 						'save'     => 'slug', // or term_id or any term object property
 					)
 				),
@@ -163,7 +176,7 @@ if ( ! class_exists( 'Plugin_Name_My_Widget' ) ) {
 					'desc'    => __( 'description for Taxonomy', 'plugin-name' ),
 					'display' => 'multicheck',
 					'options' => array(
-						'taxonomy' => 'genre',
+						'taxonomy' => 'category',
 						'save'     => 'slug', // or term_id or any term object property
 					)
 				),
