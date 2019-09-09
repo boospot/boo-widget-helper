@@ -1,0 +1,27 @@
+{
+  "name": "boospot/boo-widget-helper",
+  "type": "library",
+  "keywords": [
+    "wordpress",
+    "widgets",
+    "wigets fields",
+    "widgets save"
+  ],
+  "description": "Helper class that lets you create, save and sanitize widget fields without dealing with WordPress Widgets API.",
+  "homepage": "https://github.com/boospot/boo-widget-helper",
+  "license": "GPL-2.0",
+  "minimum-stability": "stable",
+  "authors": [
+    {
+      "name": "Rao Abid Ali",
+      "email": "rao@booskills.com",
+      "homepage": "https://booskills.com",
+      "role": "Developer"
+    }
+  ],
+  "autoload": {
+    "files": [
+      "class-boo-widget-helper.php"
+    ]
+  }
+}
