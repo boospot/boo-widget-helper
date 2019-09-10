@@ -644,7 +644,9 @@ if ( ! class_exists( 'Boo_Widget_Helper' ) ) :
 		 * @return int
 		 */
 		function sanitize_checkbox( $value ) {
-			return ( $value === '1' ) ? 1 : 0;
+		    
+		    return $value;
+			return ( $value === 'on' ) ? 'on' : 0;
 		}
 
 		/**
@@ -893,7 +895,7 @@ if ( ! class_exists( 'Boo_Widget_Helper' ) ) :
 				esc_attr( $this->get_field_id( $args['id'] ) ),
 				esc_attr( $this->get_field_name( $args['name'] ) ),
 				sanitize_html_class( $args['class'] ),
-				checked( $args['value'], '1', false )
+				checked( $args['value'], 'on', false )
 			);
 			printf(
 				'<label for="%s">%s</label><br/>',
