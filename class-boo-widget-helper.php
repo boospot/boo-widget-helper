@@ -645,7 +645,6 @@ if ( ! class_exists( 'Boo_Widget_Helper' ) ) :
 		 */
 		function sanitize_checkbox( $value ) {
 		    
-		    return $value;
 			return ( $value === 'on' ) ? 'on' : 0;
 		}
 
