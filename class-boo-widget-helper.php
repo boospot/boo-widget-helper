@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * idea is taken from Woocommerce plugin.
  *
- * @version 2.0
+ * @version 2.1
  *
  * @author RaoAbid | BooSpot
  * @link https://github.com/boospot/boo-widget-helper
@@ -296,9 +296,9 @@ if ( ! class_exists( 'Boo_Widget_Helper' ) ) :
 		 */
 		public function get_sanitize_callback_method( $type ) {
 
-			return ( method_exists( $this, "sanitize_{$type}" ) )
-				? array( $this, "sanitize_{$type}" )
-				: array( $this, "sanitize_text" );
+			return ( method_exists( $this, "sanitize_field_{$type}" ) )
+				? array( $this, "sanitize_field_{$type}" )
+				: array( $this, "sanitize_field_text" );
 
 		}
 
@@ -616,7 +616,7 @@ if ( ! class_exists( 'Boo_Widget_Helper' ) ) :
 		 *
 		 * @return string
 		 */
-		function sanitize_text( $value ) {
+		function sanitize_field_text( $value ) {
 			return ( ! empty( $value ) ) ? sanitize_text_field( $value ) : '';
 		}
 
@@ -625,7 +625,7 @@ if ( ! class_exists( 'Boo_Widget_Helper' ) ) :
 		 *
 		 * @return int|string
 		 */
-		function sanitize_number( $value ) {
+		function sanitize_field_number( $value ) {
 			return ( is_numeric( $value ) ) ? $value : 0;
 		}
 
@@ -634,7 +634,7 @@ if ( ! class_exists( 'Boo_Widget_Helper' ) ) :
 		 *
 		 * @return string
 		 */
-		function sanitize_textarea( $value ) {
+		function sanitize_field_textarea( $value ) {
 			return sanitize_textarea_field( $value );
 		}
 
@@ -643,8 +643,8 @@ if ( ! class_exists( 'Boo_Widget_Helper' ) ) :
 		 *
 		 * @return int
 		 */
-		function sanitize_checkbox( $value ) {
-		    
+		function sanitize_field_checkbox( $value ) {
+
 			return ( $value === 'on' ) ? 'on' : 0;
 		}
 
@@ -653,8 +653,8 @@ if ( ! class_exists( 'Boo_Widget_Helper' ) ) :
 		 *
 		 * @return string
 		 */
-		function sanitize_select( $value ) {
-			return $this->sanitize_text( $value );
+		function sanitize_field_select( $value ) {
+			return $this->sanitize_field_text( $value );
 		}
 
 		/**
@@ -662,8 +662,8 @@ if ( ! class_exists( 'Boo_Widget_Helper' ) ) :
 		 *
 		 * @return string
 		 */
-		function sanitize_radio( $value ) {
-			return $this->sanitize_text( $value );
+		function sanitize_field_radio( $value ) {
+			return $this->sanitize_field_text( $value );
 		}
 
 		/**
@@ -671,7 +671,7 @@ if ( ! class_exists( 'Boo_Widget_Helper' ) ) :
 		 *
 		 * @return array
 		 */
-		function sanitize_multicheck( $value ) {
+		function sanitize_field_multicheck( $value ) {
 
 			return
 				( is_array( $value ) )
@@ -684,7 +684,7 @@ if ( ! class_exists( 'Boo_Widget_Helper' ) ) :
 		 *
 		 * @return array|int
 		 */
-		function sanitize_taxonomy( $value ) {
+		function sanitize_field_taxonomy( $value ) {
 
 			return
 				( is_array( $value ) )
@@ -698,7 +698,7 @@ if ( ! class_exists( 'Boo_Widget_Helper' ) ) :
 		 *
 		 * @return string
 		 */
-		function sanitize_color( $value ) {
+		function sanitize_field_color( $value ) {
 
 			if ( false === strpos( $value, 'rgba' ) ) {
 				return sanitize_hex_color( $value );
@@ -718,7 +718,7 @@ if ( ! class_exists( 'Boo_Widget_Helper' ) ) :
 		 *
 		 * @return string
 		 */
-		function sanitize_url( $value ) {
+		function sanitize_field_url( $value ) {
 			return esc_url_raw( $value );
 		}
 
@@ -727,7 +727,7 @@ if ( ! class_exists( 'Boo_Widget_Helper' ) ) :
 		 *
 		 * @return string
 		 */
-		function sanitize_file( $value ) {
+		function sanitize_field_file( $value ) {
 //		    TODO: if the option to store file as file url
 			return esc_url_raw( $value );
 		}
@@ -737,7 +737,7 @@ if ( ! class_exists( 'Boo_Widget_Helper' ) ) :
 		 *
 		 * @return null
 		 */
-		function sanitize_html( $value ) {
+		function sanitize_field_html( $value ) {
 			// nothing to save
 			return null;
 		}
@@ -747,7 +747,7 @@ if ( ! class_exists( 'Boo_Widget_Helper' ) ) :
 		 *
 		 * @return array|int
 		 */
-		function sanitize_posts( $value ) {
+		function sanitize_field_posts( $value ) {
 
 			return
 				( is_array( $value ) )
@@ -761,7 +761,7 @@ if ( ! class_exists( 'Boo_Widget_Helper' ) ) :
 		 *
 		 * @return int
 		 */
-		function sanitize_pages( $value ) {
+		function sanitize_field_pages( $value ) {
 			// Only store page id
 			return absint( $value );
 		}
@@ -771,7 +771,7 @@ if ( ! class_exists( 'Boo_Widget_Helper' ) ) :
 		 *
 		 * @return int
 		 */
-		function sanitize_media( $value ) {
+		function sanitize_field_media( $value ) {
 			// Only store media id
 			return absint( $value );
 		}
@@ -1218,48 +1218,51 @@ if ( ! class_exists( 'Boo_Widget_Helper' ) ) :
 
 				$script =
 					"// The 'Upload' button
-                    if ($('.boospot-image-upload').length > 0) {
-                        $('.boospot-image-upload').off('click');
-                        $('.boospot-image-upload').click(function () {
-                            var send_attachment_bkp = wp.media.editor.send.attachment;
-                            var button = $(this);
-                            wp.media.editor.send.attachment = function (props, attachment) {
-                                $(button).parent().prev().attr('src', attachment.url);
-                                if (attachment.id) {
-                                    $(button).prev().val(attachment.id);
-                                    // Activate Save button
-                                    $(button)
+                    (function($) {
+                        if ($('.boospot-image-upload').length > 0) {
+                            $('.boospot-image-upload').off('click');
+                            $('.boospot-image-upload').click(function(evt) {
+                                evt.preventDefault();
+                                var send_attachment_bkp = wp.media.editor.send.attachment;
+                                var button = $(this);
+                                wp.media.editor.send.attachment = function(props, attachment) {
+                                    $(button).parent().prev().attr('src', attachment.url);
+                                    if (attachment.id) {
+                                        $(button).prev().val(attachment.id);
+                                        // Activate Save button
+                                        $(button)
+                                            .parents('.widget-content')
+                                            .siblings('.widget-control-actions')
+                                            .find('.widget-control-save')
+                                            .removeAttr('disabled');
+                                    }
+                                    wp.media.editor.send.attachment = send_attachment_bkp;
+                                }
+                                wp.media.editor.open(button);
+                                return false;
+                            });
+                        }
+                    })(jQuery);
+                    // The 'Remove' button (remove the value from input type='hidden')
+                    (function($){
+                        if ($('.boospot-image-remove').length > 0) {
+                            $('.boospot-image-remove').off('click');
+                            $('.boospot-image-remove').click(function() {
+                                var answer = confirm('Are you sure?');
+                                if (answer == true) {
+                                    var src = $(this).parent().prev().attr('data-src');
+                                    $(this).parent().prev().attr('src', src);
+                                    $(this).prev().prev().val('');
+                                    $(this)
                                         .parents('.widget-content')
                                         .siblings('.widget-control-actions')
                                         .find('.widget-control-save')
                                         .removeAttr('disabled');
                                 }
-                                wp.media.editor.send.attachment = send_attachment_bkp;
-                            }
-                            wp.media.editor.open(button);
-                            return false;
-                        });
-                    }
-
-                    // The 'Remove' button (remove the value from input type='hidden')
-                    if ($('.boospot-image-remove').length > 0) {
-                        $('.boospot-image-remove').off('click');
-                        $('.boospot-image-remove').click(function () {
-                            var answer = confirm('Are you sure?');
-                            if (answer == true) {
-                                var src = $(this).parent().prev().attr('data-src');
-                                $(this).parent().prev().attr('src', src);
-                                $(this).prev().prev().val('');
-                                $(this)
-                                    .parents('.widget-content')
-                                    .siblings('.widget-control-actions')
-                                    .find('.widget-control-save')
-                                    .removeAttr('disabled');
-                            }
-                            return false;
-                        });
-                    }";
-
+                                return false;
+                            });
+                        }
+                    })(jQuery);";
 				wp_add_inline_script( $this->prefix . 'admin_scripts', $script );
 				$scripts_required = true;
 			}
@@ -1508,7 +1511,7 @@ if ( ! class_exists( 'Boo_Widget_Helper' ) ) :
 				'and'
 			);
 
-			$options = array( '' => __( 'Please Select', '' )) + $options;
+			$options = array( '' => __( 'Please Select', '' ) ) + $options;
 
 			//$args['options'] is required by callback_select()
 			$args['options'] = $options;
