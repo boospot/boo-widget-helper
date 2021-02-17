@@ -1342,7 +1342,7 @@ if ( ! class_exists( 'Boo_Widget_Helper' ) ) :
 		function callback_color( $args ) {
 
 			printf(
-				'<label for="%s">%s</label>',
+				'<label for="%s">%s</label><br/>',
 				esc_attr( $this->get_field_name( $args['name'] ) ),
 				$args['label']
 			);
